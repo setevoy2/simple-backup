@@ -10,7 +10,6 @@ __author__ = "Arseny Zinchenko"
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Arseny Zinchenko"
-__email__ = "1th@setevoy.kiev.ua"
 __status__ = "Development"
 
 

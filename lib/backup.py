@@ -7,7 +7,6 @@ import datetime
 import subprocess
 import configparser
 
-
 from lib import common
 from lib import s3sync
 
@@ -16,7 +15,7 @@ def www_backup(site, www_backup_file, parser):
 
     # if 'www_data_path' doesn't set in config for $site - skip it
     try:
-        www_source_dir = common.set_params(parser, site).get('www_data_path')
+        www_source_dir = parser.get(site, 'www_data_path')
     except configparser.NoOptionError as e:
         print('\nWARNING: {}.\nSkipping WWW backup for the {}.\n'.format(e, site))
         return
@@ -68,18 +67,17 @@ def backup(config):
     parser = common.get_config(config)
 
     # set own settings
-    settings = common.set_params(parser, 'backup-settings')
     # "/backups"
-    backup_root_path = settings.get('backup_root_path')
+    backup_root_path = parser.get('backup-settings', 'backup_root_path')
     # "/backups" + "files"
-    files_destination_dir = os.path.join(backup_root_path, settings.get('backup_files_path'))
+    files_destination_dir = os.path.join(backup_root_path, parser.get('backup-settings', 'backup_files_dir'))
     # "/backups" + "databases"
-    db_destination_dir = os.path.join(backup_root_path, settings.get('backup_db_path'))
+    db_destination_dir = os.path.join(backup_root_path, parser.get('backup-settings', 'backup_db_dir'))
 
     print('\nGot own settings:\n\n'
           'backup_root_path = {}\n'
-          'backup_files_path = {}\n'
-          'backup_db_path = {}\n'
+          'backup_files_dir = {}\n'
+          'backup_db_dir = {}\n'
           .format(backup_root_path, files_destination_dir, db_destination_dir)
          )
 
@@ -91,19 +89,10 @@ def backup(config):
     today = datetime.datetime.now().strftime('%d-%m-%Y-%H-%M')
 
     # start sites backup here
-    # for [backup-settings], [test], [rtfm]
+    # for [backup-settings] etc sections
     for site in parser.sections():
         # skip own settings section 'backup-settings' and 'defaults'
         if all ([site != 'backup-settings', site != 'defaults']):
-
-            # check for S3 sync first
-            # if section/site have 's3_sync' = True then check and install dependencies
-            # False otherwise
-            try:
-                parser.get(site, 's3_sync')
-                common.check_deps()
-            except configparser.NoOptionError:
-                pass
 
             # WWW backup section
             # /backups/files/test-02-01-2018-13-58.gz
@@ -120,10 +109,18 @@ def backup(config):
             # exec mysql database dump
             db_backup(site, db_backup_file, parser)
 
-            # AWS S3 upload section
-            # testing, #Todo
-            #s3sync.upload(site, [www_backup_file, db_backup_file], parser)
+            # check for S3 sync first
+            # if section/site have 'aws_s3_sync' = 'yes' then check and install dependencies
+            try:
+                if parser.get(site, 'aws_s3_sync') == 'yes':
+                    common.check_deps()
+                    s3sync.upload(site, [www_backup_file, db_backup_file], parser)
+                else:
+                    print('Site {} doesn\'t marked as to be synced with AWS S3, skipping.\n'.format(site))
+            except configparser.NoOptionError:
+                pass
 
             # Cleanup section
             # delete files older then "bkps_keep_days" param
+            print('\nStarting local backups storage cleanup...\n')
             common.bkps_cleanup(site, [files_destination_dir, db_destination_dir], parser)

@@ -13,7 +13,7 @@ def pip_install(pkg_name):
 
 def check_deps():
 
-    print('\nChecking for dependencies:')
+    print('Checking for dependencies:')
 
     try:
         import boto3
@@ -37,48 +37,6 @@ def get_config(config):
         raise Exception('ERROR: No config file {} found!'.format(config))
 
     return parser
-
-
-def set_params(parser, section):
-
-    """
-    Depending on a passed $section will return dictionary with values:
-
-        for the [backup-settings] section:
-
-    'backup_root_path': '/backups',
-    'backup_files_path': 'files',
-    'backup_db_path': 'databases'
-
-        for the [test] section:
-
-    'www_data_path': '/tmp/testbak/',
-    'mysql_db': 'bkp_test',
-    'mysql_host': 'localhost',
-    'mysql_user': 'bkp_test',
-    'mysql_pass': 'bkp_test'
-
-    """
-
-    # set own settings if "backup-settings" passed
-    if section == 'backup-settings':
-        params = dict.fromkeys([
-            'backup_root_path',
-            'backup_files_path',
-            'backup_db_path'])
-    # otherwise set site's settings
-    else:
-        params = dict.fromkeys([
-            'www_data_path',
-            'mysql_db',
-            'mysql_host',
-            'mysql_user',
-            'mysql_pass'])
-
-    for param in params:
-        params[param] = parser.get(section, param)
-
-    return params
 
 
 def check_dirs(dirs):
@@ -105,11 +63,10 @@ def bkps_cleanup(site, dirs, parser):
         keep_days = parser.get('defaults', 'bkps_keep_days')
         print('Using default value: {}.\n'.format(keep_days))
 
-    for dir in dirs:
-        for f in os.listdir(dir):
-            if os.stat(os.path.join(dir, f)).st_mtime < now - int(keep_days) * 86400:
-                print('Deleting file: {}'.format(os.path.join(dir, f)))
-                #os.remove(os.path.join(dir, f))
-                print('To del: {}'.format(os.path.join(dir, f)))
+    for d in dirs:
+        for f in os.listdir(d):
+            if os.stat(os.path.join(d, f)).st_mtime < now - int(keep_days) * 86400:
+                print('Deleting file: {}'.format(os.path.join(d, f)))
+                os.remove(os.path.join(d, f))
             else:
-                print('Saving files: {}'.format(os.path.join(dir, f)))
+                print('Keeping local data: {}'.format(os.path.join(d, f)))
