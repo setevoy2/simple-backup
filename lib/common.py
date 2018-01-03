@@ -44,12 +44,12 @@ def check_dirs(dirs):
     # check for backup directories, create if not
     print('Checking directories:\n')
 
-    for dir in dirs:
-        if not os.path.isdir(dir):
-            print('{} - not found, creating...'.format(dir))
-            os.mkdir(dir)
+    for d in dirs:
+        if not os.path.isdir(d):
+            print('{} - not found, creating...'.format(d))
+            os.mkdir(d)
         else:
-            print('{} - found, OK.'.format(dir))
+            print('{} - found, OK.'.format(d))
 
 
 def bkps_cleanup(site, dirs, parser):
