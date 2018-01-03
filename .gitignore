@@ -1,3 +1,4 @@
 temp/
 .idea/
 lib/__pycache__/
+*.swp
