@@ -113,6 +113,7 @@ def backup(config):
             # if section/site have 'aws_s3_sync' = 'yes' then check and install dependencies
             try:
                 if parser.get(site, 'aws_s3_sync') == 'yes':
+                    # move to start
                     common.check_deps()
                     s3sync.upload(site, [www_backup_file, db_backup_file], parser)
                 else:
