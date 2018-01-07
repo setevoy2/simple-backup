@@ -64,9 +64,18 @@ def bkps_cleanup(site, dirs, parser):
         print('Using default value: {}.\n'.format(keep_days))
 
     for d in dirs:
+#	print('DEBUG: d {} in dirs {}'.format(d, dirs))
         for f in os.listdir(d):
             if os.stat(os.path.join(d, f)).st_mtime < now - int(keep_days) * 86400:
-                print('Deleting file: {}'.format(os.path.join(d, f)))
-                os.remove(os.path.join(d, f))
+                # do try catch here
+                if os.path.isfile(os.path.join(d, f)):
+                    print('Deleting file: {}'.format(os.path.join(d, f)))
+                    os.remove(os.path.join(d, f))
+                else:
+                    print('ERROR: can not find file {}. Exit.'.format(os.path.join(d, f)))
             else:
                 print('Keeping local data: {}'.format(os.path.join(d, f)))
+
+
+if __name__ == '__main__':
+    print('DEBUG')
