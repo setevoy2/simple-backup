@@ -94,10 +94,17 @@ def backup(config):
         # skip own settings section 'backup-settings' and 'defaults'
         if all ([site != 'backup-settings', site != 'defaults']):
 
+            # must return website dir name
+            # e.g.:
+            # >>> www_data_path = "/data/dev.rtfm.co.ua/"
+            #>>> print(www_data_path.split('/')[-2])
+            # dev.rtfm.co.ua
+            site_dir = parser.get(site, 'www_data_path').split('/')[-2]
+
             # WWW backup section
             # /backups/files/test-02-01-2018-13-58.gz
             www_backup_file = os.path.join(files_destination_dir,
-                                           today + '_'+ site + '_' + '.gz')
+                                           today + '_'+ site + '_' + site_dir + '.gz')
             # exec www files tar
             www_backup(site, www_backup_file, parser)
 
