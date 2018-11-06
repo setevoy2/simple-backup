@@ -2,3 +2,5 @@ temp/
 .idea/
 lib/__pycache__/
 lib/*.pyc
+=======
+*.swp
